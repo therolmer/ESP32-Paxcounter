@@ -1,6 +1,7 @@
 // Basic Config
 #include "globals.h"
 #include "wifiscan.h"
+#include "wifiFilter.h"
 #include <esp_coexist.h>
 #include "coexist_internal.h"
 
@@ -36,6 +37,8 @@ IRAM_ATTR void wifi_sniffer_packet_handler(void *buff,
   const wifi_ieee80211_packet_t *ipkt =
       (wifi_ieee80211_packet_t *)ppkt->payload;
   const wifi_ieee80211_mac_hdr_t *hdr = &ipkt->hdr;
+  
+  showMetadata(ppkt->payload, ppkt->rx_ctrl.sig_len, abs(ppkt->rx_ctrl.rssi));
 
   if ((cfg.rssilimit) &&
       (ppkt->rx_ctrl.rssi < cfg.rssilimit)) // rssi is negative value
@@ -57,8 +60,8 @@ void wifi_sniffer_init(void) {
   wificfg.nvs_enable = 0;        // we don't need any wifi settings from NVRAM
   wificfg.wifi_task_core_id = 0; // we want wifi task running on core 0
   wifi_promiscuous_filter_t filter = {
-      // .filter_mask = WIFI_PROMIS_FILTER_MASK_MGMT}; // only MGMT frames
-      .filter_mask = WIFI_PROMIS_FILTER_MASK_ALL}; // we use all frames
+      .filter_mask = WIFI_PROMIS_FILTER_MASK_MGMT}; // only MGMT frames
+      //.filter_mask = WIFI_PROMIS_FILTER_MASK_ALL}; // we use all frames
 
   ESP_ERROR_CHECK(esp_coex_preference_set(
       ESP_COEX_PREFER_BALANCE)); // configure Wifi/BT coexist lib

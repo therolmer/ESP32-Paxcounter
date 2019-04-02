@@ -8,6 +8,7 @@
 
 #include "globals.h"
 #include "blescan.h"
+#include "wifiFilter.h"
 #include "wifiscan.h"
 #include "configmanager.h"
 #include "cyclic.h"
