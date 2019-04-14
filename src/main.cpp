@@ -93,6 +93,9 @@ timesource_t timeSource = _unsynced;
 // if present
 std::set<uint16_t, std::less<uint16_t>, Mallocator<uint16_t>> macs;
 
+std::set<uint32_t, std::less<uint32_t>, Mallocator<uint32_t>> LocalMacsHash;
+std::set<uint64_t, std::less<uint64_t>, Mallocator<uint64_t>> GlobalMacs;
+
 // initialize payload encoder
 PayloadConvert payload(PAYLOAD_BUFFER_SIZE);
 

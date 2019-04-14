@@ -1,10 +1,45 @@
 #include "wifiFilter.h"
 
+// Basic Config
+#include "globals.h"
+
 uint8_t macAddr[MAX_MAC_ADDR][PAYLOAD_BEGIN + 112];
 int NumberOfMacs = 0;
 int localWithSSID = 0;
 char emptyStr[] = "                ";
 uint8_t cleanBuffer[300];
+
+char * uintToStr( const uint64_t num, char *str )
+{
+  uint8_t i = 0;
+  uint64_t n = num;
+ 
+  do
+    i++;
+  while ( n /= 10 );
+ 
+  str[i] = '\0';
+  n = num;
+ 
+  do
+    str[--i] = ( n % 10 ) + '0';
+  while ( n /= 10 );
+
+  return str;
+}
+
+uint64_t mac2int(const uint8_t hwaddr[])
+{
+    int8_t i;
+    uint64_t ret = 0;
+    const uint8_t *p = hwaddr;
+
+    for (i = 5; i >= 0; i--) {
+        ret |= (uint64_t) *p++ << (CHAR_BIT * i);
+    }
+
+    return ret;
+}
 
 void showMetadata(const uint8_t *buffer, unsigned int length, unsigned int rssi) 
 {
@@ -22,15 +57,29 @@ void showMetadata(const uint8_t *buffer, unsigned int length, unsigned int rssi)
 
     char tempS[50];
 
+    bool local = false;
     // Global or local
     if ((buffer[10] & 0x2) == 0x2) 
     {
         uint16_t sequence = (buffer[16] >> 8) + (buffer[15] << 4);
         sprintf(tempS, "Local");
+        local = true;
     } 
     else
     {
         sprintf(tempS, "Global");    
+
+        uint64_t mac = mac2int(&buffer[10]);
+          
+        char macChar[] = "00:00:00:00:00:00";
+        Serial.print(uintToStr(mac, macChar));
+        Serial.print(" ");
+
+        auto search = GlobalMacs.find(mac);
+        if (search == GlobalMacs.end()) 
+        {
+          GlobalMacs.insert(mac);
+        }                
     }
 
     char addr1[] = "00:00:00:00:00:00";
@@ -38,7 +87,7 @@ void showMetadata(const uint8_t *buffer, unsigned int length, unsigned int rssi)
 
     char tempS2[150];
     sprintf(tempS2, "%s Len: %i %s RSSI: %i SsidLen: %i", addr1, length, tempS, rssi, buffer[25]);
-    Serial.print(tempS2);
+    Serial.println(tempS2);
 
     // SSID
     if (buffer[25] > 0 )
@@ -57,19 +106,19 @@ void showMetadata(const uint8_t *buffer, unsigned int length, unsigned int rssi)
         uint8_t ieId = buffer[curPos];
         uint8_t ieLen = buffer[curPos + 1];
                 
-        Serial.print(" id: ");
-        Serial.print(ieId);
+        // Serial.print(" id: ");
+        // Serial.print(ieId);
        
-        Serial.print("(");
-        Serial.print(ieLen);
-        Serial.print(")");
+        // Serial.print("(");
+        // Serial.print(ieLen);
+        // Serial.print(")");
        
         if (ieLen == 0)
         {
             // Сдвиг только для первого IE
             if (!firstIe)
             {
-                // Хрень, на будущее отбрасывать
+                // Неправильный пакет, на будущее отбрасывать
                 curPos = curPos - 2;
                 notAllFound = false;
             }
@@ -100,23 +149,36 @@ void showMetadata(const uint8_t *buffer, unsigned int length, unsigned int rssi)
     }
     while (notAllFound);
 
-    uint32_t hashedmac = rokkit((const char*)&buffer[24 + dataBegin], curPos - dataBegin - 24);
-    Serial.print(" ##");
-    Serial.print(hashedmac);
-    Serial.print("##");
+    //uint32_t hashedmac = rokkit((const char*)&buffer[24 + dataBegin], curPos - dataBegin - 24);
+    // Serial.print(" ##");
+    // Serial.print(hashedmac);
+    // Serial.print("##");
     
-    Serial.println(" ");
-    printhex(cleanBuffer, 0, cleanBufferPos);
-    Serial.println(" ");
+    // Serial.println(" ");
+    // printhex(cleanBuffer, 0, cleanBufferPos);
+    // Serial.println(" ");
 
-    hashedmac = rokkit((const char*)&cleanBuffer[0], cleanBufferPos);
-    Serial.print(" 2##");
-    Serial.print(hashedmac);
-    Serial.print("2##");
+    if (local)
+    {
+        uint32_t hashedmac = rokkit((const char*)&cleanBuffer[0], cleanBufferPos);
 
-    Serial.println(" ");
-    printhex(buffer, 0, length);
-    Serial.println(" ");
+        Serial.print(" ##");
+        Serial.print(hashedmac);
+        Serial.println(" ##");
+
+        auto search = LocalMacsHash.find(hashedmac);
+        if (search == LocalMacsHash.end()) 
+        {
+          LocalMacsHash.insert(hashedmac);
+        }                
+    }
+    // Serial.print(" 2##");
+    // Serial.print(hashedmac);
+    // Serial.print("2##");
+
+    // Serial.println(" ");
+    // printhex(buffer, 0, length);
+    // Serial.println(" ");
 
   //     sprintf(cstr, " Ch: %i", wifi_get_channel());
   //     Serial.print(cstr);

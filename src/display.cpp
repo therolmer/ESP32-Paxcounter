@@ -1,4 +1,4 @@
-#ifdef HAS_DISPLAY
+#ifdef OLED_DISPLAY
 
 /*
 
@@ -28,7 +28,7 @@ line 7: y = Text for LMIC status; ab = payload queue
 
 #define DISPLAY_PAGES (3) // number of display pages
 
-HAS_DISPLAY u8x8(MY_OLED_RST, MY_OLED_SCL, MY_OLED_SDA);
+OLED_DISPLAY_TYPE u8x8(MY_OLED_RST, MY_OLED_SCL, MY_OLED_SDA);
 
 // helper string for converting LoRa spread factor values
 #if defined(CFG_eu868)
@@ -345,4 +345,4 @@ void draw_page(time_t t, uint8_t page) {
 
 } // draw_page
 
-#endif // HAS_DISPLAY
+#endif // OLED_DISPLAY

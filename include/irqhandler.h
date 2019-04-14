@@ -19,7 +19,12 @@ void irqHandler(void *pvParameters);
 int mask_user_IRQ();
 int unmask_user_IRQ();
 
-#ifdef HAS_DISPLAY
+#ifdef TFT_DISPLAY
+#include "displayTft.h"
+void IRAM_ATTR DisplayIRQ();
+#endif
+
+#ifdef OLED_DISPLAY
 #include "display.h"
 void IRAM_ATTR DisplayIRQ();
 #endif

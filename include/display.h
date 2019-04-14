@@ -6,8 +6,6 @@
 
 extern uint8_t DisplayIsOn;
 
-extern HAS_DISPLAY u8x8;
-
 void init_display(const char *Productname, const char *Version);
 void refreshtheDisplay(void);
 void refreshtheDisplay(bool nextPage);

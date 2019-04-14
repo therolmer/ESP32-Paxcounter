@@ -101,6 +101,9 @@ enum timesource_t { _gps, _rtc, _lora, _unsynced };
 enum mutexselect_t { no_mutex, do_mutex };
 
 extern std::set<uint16_t, std::less<uint16_t>, Mallocator<uint16_t>> macs;
+extern std::set<uint32_t, std::less<uint32_t>, Mallocator<uint32_t>> LocalMacsHash;
+extern std::set<uint64_t, std::less<uint64_t>, Mallocator<uint64_t>> GlobalMacs;
+
 extern std::array<uint64_t, 0xff>::iterator it;
 extern std::array<uint64_t, 0xff> beacons;
 
@@ -131,7 +134,11 @@ extern time_t userUTCTime;
 #include "lorawan.h"
 #endif
 
-#ifdef HAS_DISPLAY
+#ifdef TFT_DISPLAY
+#include "displayTft.h"
+#endif
+
+#ifdef OLED_DISPLAY
 #include "display.h"
 #endif
 
